@@ -310,7 +310,7 @@ srv:listen(80, function(conn)
 
         -- handle posted data updates
         function handlePOSTcontent(POST_seconds_until_switchoff_counter, POST_relais_state)
-            if POST_seconds_until_switchoff_counter then
+            if POST_seconds_until_switchoff_counter and tonumber(POST_relais_state)==2 then
                seconds_until_switchoff_counter = POST_seconds_until_switchoff_counter
             end
 

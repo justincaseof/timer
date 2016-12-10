@@ -35,8 +35,7 @@ pwm.start(led_pin)
 -- 0: off, 1: on, 2: timer
 relais_state = 2
 -- initial delay (FIXME TODO: persist in flash)
-seconds_until_switchoff = 1800
-seconds_until_switchoff_counter = seconds_until_switchoff
+seconds_until_switchoff_counter = 1800
 
 ----------------
 -- Timers     --
@@ -103,9 +102,10 @@ tmr.register(timer1_id, timer1_timeout_millis, tmr.ALARM_SEMI, function()
         relais_state = 0
     end
 
-    -- PWM (...devide by 2 to keep the LED darker)
+    -- set PWM maximum to visualize remaining time
+    -- (...devide by 2 to keep the LED darker)
     pwm_duty = getPWMDuty() / 2
-    if pwm_duty < pwm_duty_MIN then pwm_duty = pwm_duty_MIN end
+    if pwm_duty < pwm_duty_MIN+1 then pwm_duty = pwm_duty_MIN+1 end
     --print("  getPWMDuty(): " .. pwm_duty)
     -- /PWM
 
@@ -196,13 +196,13 @@ wifi.setmode(wifi.STATION)
 -- less energy consumption
 wifi.setphymode(wifi.PHYMODE_G)
 -- edit config
-WIFI_SSID = "Turminator"
+WIFI_SSID = "JustinCaseof"
 WIFI_PASSWORD = "lkwpeter,.-123"
 wifi.sta.config(WIFI_SSID, WIFI_PASSWORD) 
 wifi.sta.connect()
-
+print(" connecting to: " .. WIFI_SSID)
 -- register listener to see if we're connected
-wifi.sta.eventMonReg(wifi.STA_GOTIP, function() print("STATION_GOT_IP") end)
+--wifi.sta.eventMonReg(wifi.STA_GOTIP, function() print("STATION_GOT_IP") end)
  
 ----------------
 -- Web Server --
@@ -310,15 +310,13 @@ srv:listen(80, function(conn)
         function handlePOST(path)
             print("### handlePOST() ###")
 
-            local POST_expandTime = string.match(payload, "expandTime=(%d*)") --or "N/A"
+            local POST_seconds_until_switchoff_counter = string.match(payload, "seconds_until_switchoff_counter=(%d*)")
             local POST_relais_state = string.match(payload, "relais_state=(%d)")
-            local POST_genericvalue = string.match(payload, "genericvalue=")
             print("  expandTime: " .. (POST_expandTime or "?"))
             print("  relais_state: " .. (POST_relais_state or "?"))
 
-            if POST_expandTime then
-               seconds_until_switchoff = POST_expandTime
-               seconds_until_switchoff_counter = seconds_until_switchoff
+            if POST_seconds_until_switchoff_counter then
+               seconds_until_switchoff_counter = POST_seconds_until_switchoff_counter
             end
 
             if POST_relais_state then

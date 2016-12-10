@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			body {
+				background-color: black;
+			}
+			input.sesambutton {
+				border: 1px solid #f44c0e;
+				border-radius: 15px;
+				color: #fff;
+				background: tomato;
+				width: 380px;
+				height: 100px;
+				font-size: 17pt;
+				margin-top: 10px;
+			}
+			div.centerdiv { 
+	            text-align: center;
+	            width: 600px;
+	            border: 2px solid #aab2a7;
+	            border-radius: 10px;
+	            padding-left: 5px;
+	            padding-right: 5px;
+	            padding-top: 5px;
+	            margin-left: auto;
+	            margin-right: auto;
+	            background: #404040;
+	        }
+			input.digit {
+				border: 1px solid #f44c0e;
+				color: #fff;
+				background: tomato;
+				width: 60px;
+				height: 60px;
+				font-size: 20pt;
+				border-radius: 3px;
+				margin-top: 10px;
+				text-align: center;
+			}
+			table.centertable {
+				margin-left: auto;
+				margin-right: auto;
+				width: 300px;
+			}
+	        p.welcome {
+	            color: #52ea14;
+	            font-size: 20pt;
+	        }
+	        p.code_ok {
+	            color: #af0ce4;
+	            font-size: 20pt;
+	        }
+	        p.code_nok {
+	            color: #e40c38;
+	            font-size: 20pt;
+	        }
+	        p.code_eingabe {
+	            color: #a5d29e;
+	            font-size: 15pt;
+	        }
+	        p.impressum {
+	            color: #eeeeee;
+	            font-size: 8pt;
+	        }
+		</style>
+	</head>
+	<body>
+		<div class="centerdiv">
+		<!--<input type="text" value="OK">
+		<input type="text" value="NOPE">-->
+	        <div style="text-align: center;">
+	            <p class="welcome">Anne &amp; Felix&#039; Schatztruhe</p>
+	        </div>
+			<form action="" method="GET">
+				<table class="centertable">
+					<tr>
+						<td><input class="digit" type="text" name="pw1" maxlength="1" onclick="this.value='';" value="1"></td>
+						<td><input class="digit" type="text" name="pw2" maxlength="1" onclick="this.value='';" value="2"></td>
+						<td><input class="digit" type="text" name="pw3" maxlength="1" onclick="this.value='';" value="3"></td>
+						<td><input class="digit" type="text" name="pw4" maxlength="1" onclick="this.value='';" value="4"></td>
+						<td><input class="digit" type="text" name="pw5" maxlength="1" onclick="this.value='';" value="5"></td>
+						<td><input class="digit" type="text" name="pw6" maxlength="1" onclick="this.value='';" value="6"></td>
+						<td><input class="digit" type="text" name="pw7" maxlength="1" onclick="this.value='';" value="7"></td>
+						<td><input class="digit" type="text" name="pw8" maxlength="1" onclick="this.value='';" value="8"></td>
+					</tr>
+				</table>
+				<input class="sesambutton" type="submit" name="unlockcodesent" value="SESAM OEFFNE DICH">
+
+	            <div style="text-align: center;">
+	                <p class="code_ok">Code<br><b>RICHTIG</b> :-)</p>
+	            </div>
+	            <div style="text-align: center;">
+	                <p class="code_nok">Code<br><b>FALSCH</b> :-(</p>
+	            </div>
+	            <div style="text-align: center;">
+	                <p class="code_eingabe">Bitte Code eingeben</p>
+	            </div>
+			</form>
+	        <div style="text-align: right;">
+	            <p class="impressum">(c) Familienbande </p>
+	        </div>
+		</div>
+	</body>
+</html>

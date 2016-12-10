@@ -19,12 +19,14 @@
             <input type="submit" name="button_on" value="ON" onclick="relais_state.value=1">
             <input type="submit" name="button_off" value="OFF" onclick="relais_state.value=0">
         </form>
-        <form action="reload">
+        <br>
+        <a href="/">-r-e-l-o-a-d-</a>
+        <br>
+        <a href="/status">json-status</a>
+        <br>
+        <form action="status" method="POST" >
             <p>
-                <a href="/">-r-e-l-o-a-d-</a>
-            </p>
-            <p>
-                <a href="/status">json-status</a>
+                <input type="submit" name="lala" value="POST /status test">
             </p>
         </form>
     </body>

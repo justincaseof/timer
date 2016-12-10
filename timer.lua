@@ -298,6 +298,7 @@ srv:listen(80, function(conn)
         
         function handleGET(path)
             print("### handleGET() ###")
+            -- path?
             if string.match(path, "status") then
                 print(" - respondStatus()")
                 respondStatus()
@@ -306,15 +307,9 @@ srv:listen(80, function(conn)
                 respondMain()
             end
         end
-        
-        function handlePOST(path)
-            print("### handlePOST() ###")
 
-            local POST_seconds_until_switchoff_counter = string.match(payload, "seconds_until_switchoff_counter=(%d*)")
-            local POST_relais_state = string.match(payload, "relais_state=(%d)")
-            print("  expandTime: " .. (POST_expandTime or "?"))
-            print("  relais_state: " .. (POST_relais_state or "?"))
-
+        -- handle posted data updates
+        function handlePOSTcontent(POST_seconds_until_switchoff_counter, POST_relais_state)
             if POST_seconds_until_switchoff_counter then
                seconds_until_switchoff_counter = POST_seconds_until_switchoff_counter
             end
@@ -324,6 +319,26 @@ srv:listen(80, function(conn)
                 -- reset counters
                 if tonumber(POST_relais_state)==0 then seconds_until_switchoff_counter = 0 end
                 if tonumber(POST_relais_state)==1 then seconds_until_switchoff_counter = 0 end
+            end
+        end
+        
+        function handlePOST(path)
+            print("### handlePOST() ###")
+            -- path?
+            if string.match(path, "status") then
+                -- POST @ path "/status" --> application/json
+                local whitespace1, POST_seconds_until_switchoff_counter = string.match(payload, "\"seconds_until_switchoff_counter\":(%s*)(%d*)")
+                local whitespace2, POST_relais_state = string.match(payload, "\"relais_state\":(%s*)(%d)")
+                print("  POST_seconds_until_switchoff_counter: " .. (POST_seconds_until_switchoff_counter or "?"))
+                print("  POST_relais_state: " .. (POST_relais_state or "?"))
+                handlePOSTcontent(POST_seconds_until_switchoff_counter, POST_relais_state)
+            else
+                -- POST @ path "/" --> application/x-www-form-urlencoded
+                local POST_seconds_until_switchoff_counter = string.match(payload, "seconds_until_switchoff_counter=(%d*)")
+                local POST_relais_state = string.match(payload, "relais_state=(%d)")
+                print("  POST_seconds_until_switchoff_counter: " .. (POST_seconds_until_switchoff_counter or "?"))
+                print("  POST_relais_state: " .. (POST_relais_state or "?"))
+                handlePOSTcontent(POST_seconds_until_switchoff_counter, POST_relais_state)
             end
             
             respondMain()

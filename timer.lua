@@ -182,28 +182,32 @@ print(" timer2 started");
 ----------------
 -- Init Wifi  --
 ----------------
-print("Wifi Station Setup")
-print("-- current AP cfg --")
-print(wifi.ap.getmac())
-print(wifi.ap.getip())
-print(wifi.ap.getbroadcast())
-print("-- current STATION cfg --")
-print(wifi.sta.getmac())
-print(wifi.sta.getip())
+-- read config from FS
+client_ssid = "notinitialized"
+client_password = "notinitialized"
+if file.open("client_ssid.txt", "r") then
+    client_ssid = file.readline()
+    file.close()
+end
+collectgarbage()
+if file.open("client_password.txt", "r") then
+    client_password = file.readline()
+    file.close()
+end
+collectgarbage()
+print("client_ssid: '" .. client_ssid .. "'")
+print("client_password: '" .. client_password .. "'")
+print("  again: " .. string.gsub(client_password, "%%2C", ","))
 
 -- setup station mode
 wifi.setmode(wifi.STATION)
 -- less energy consumption
 wifi.setphymode(wifi.PHYMODE_G)
 -- edit config
-WIFI_SSID = "JustinCaseof"
-WIFI_PASSWORD = "lkwpeter,.-123"
-wifi.sta.config(WIFI_SSID, WIFI_PASSWORD) 
+wifi.sta.config(client_ssid, client_password) 
 wifi.sta.connect()
-print(" connecting to: " .. WIFI_SSID)
--- register listener to see if we're connected
---wifi.sta.eventMonReg(wifi.STA_GOTIP, function() print("STATION_GOT_IP") end)
- 
+print(" connecting to: " .. client_ssid)
+
 ----------------
 -- Web Server --
 ----------------

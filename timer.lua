@@ -33,9 +33,9 @@ pwm.start(led_pin)
 -- check for active wifi setup during cycle
 -- var 'local setup_wifi = gpio.read(setupwifi_pin)' has been previously defined by init.lua script
 function isWifiSetupActive()
-    --if setupwifi_pin then
-    --    return gpio.read(setupwifi_pin)==0
-    --end
+    if setupwifi_pin then
+        return gpio.read(setupwifi_pin)==0
+    end
     return false
 end    
 

@@ -299,6 +299,8 @@ srv:listen(80, function(conn)
                             sck:send("seconds_until_switchoff_counter: " .. seconds_until_switchoff_counter or "?", 
                             function() 
                                 sck:close()
+                                sck = nil
+                                collectgarbage()
                             end)
                         end)
                 end)
@@ -312,6 +314,8 @@ srv:listen(80, function(conn)
                 ",\"relais_state\":" .. relais_state .. "}", 
                 function()
                     sck:close()
+                    sck = nil
+                    collectgarbage()
                 end)
         end
 
@@ -320,6 +324,8 @@ srv:listen(80, function(conn)
                 "Server: NodeMCU on ESP8266\r\n", 
                 function()
                     sck:close()
+                    sck = nil
+                    collectgarbage()
                 end)
         end
 
@@ -328,6 +334,8 @@ srv:listen(80, function(conn)
                 "Server: NodeMCU on ESP8266\r\n", 
                 function()
                     sck:close()
+                    sck = nil
+                    collectgarbage()
                 end)
         end
 
@@ -395,9 +403,14 @@ srv:listen(80, function(conn)
             respondError()
         end
 
-        -- finally, collect garbage
+        -- === GC: GARGABE COLLECTION (i have some kind of mem leak) ===
+        request_payload = nil
+        payload = nil
+        GET_requestpath = nil
+        POST_requestpath = nil
         collectgarbage()
-        
+        -- === /GC ===
+
     end)
         
 end)

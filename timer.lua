@@ -29,6 +29,16 @@ pwm_duty = pwm_duty_MIN
 pwm.setup(led_pin, pwm_frequency, pwm_duty_MIN)
 pwm.start(led_pin)
 
+
+-- check for active wifi setup during cycle
+-- var 'local setup_wifi = gpio.read(setupwifi_pin)' has been previously defined by init.lua script
+function isWifiSetupActive()
+    --if setupwifi_pin then
+    --    return gpio.read(setupwifi_pin)==0
+    --end
+    return false
+end    
+
 ------------------
 -- STATES  --
 ------------------
@@ -102,12 +112,22 @@ tmr.register(timer1_id, timer1_timeout_millis, tmr.ALARM_SEMI, function()
         relais_state = 0
     end
 
+    -- PWM
     -- set PWM maximum to visualize remaining time
     -- (...devide by 2 to keep the LED darker)
     pwm_duty = getPWMDuty() / 2
     if pwm_duty < pwm_duty_MIN+1 then pwm_duty = pwm_duty_MIN+1 end
     --print("  getPWMDuty(): " .. pwm_duty)
     -- /PWM
+
+    -- WIFICHECK
+    -- check for active wifi setup during cycle
+    -- var 'local setup_wifi = gpio.read(setupwifi_pin)' has been previously defined by init.lua script
+    if isWifiSetupActive() then
+        printf("SETUP_WIFI_RESTART")
+        node.restart()
+    end
+    -- /WIFICHECK
 
     tmr.start(timer1_id)
 end)

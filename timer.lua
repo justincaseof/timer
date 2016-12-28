@@ -22,10 +22,10 @@ end
 switchOn()
 
 -- PWM for LED 'led_pin'
-pwm_frequency = 200
-pwm_duty_MIN = 1
-pwm_duty_MAX = 1000 -- actually we could go up to 1023, but there's flickering then somehow.
-pwm_duty = pwm_duty_MIN
+local pwm_frequency = 200
+local pwm_duty_MIN = 1
+local pwm_duty_MAX = 1000 -- actually we could go up to 1023, but there's flickering then somehow.
+local pwm_duty = pwm_duty_MIN
 pwm.setup(led_pin, pwm_frequency, pwm_duty_MIN)
 pwm.start(led_pin)
 
@@ -43,7 +43,7 @@ seconds_until_switchoff_counter = 1800
 
 -- duty: 0..1023 
 -- attention: >100 causes flickering somehow
-function getPWMDuty()
+local function getPWMDuty()
     -- handle ON and OFF separately
     if tonumber(relais_state) == 1 then return 1000 end
     if tonumber(relais_state) == 0 then return  150 end
@@ -74,15 +74,17 @@ function getPWMDuty()
 end
 
 -- DO NOT CHANGE THIS TIMER DEFINITION!
-timer1_id = 0
-timer1_timeout_millis = 1000
+local timer1_id = 0
+local timer1_timeout_millis = 1000
 tmr.register(timer1_id, timer1_timeout_millis, tmr.ALARM_SEMI, function()
     -- LOG --
+    
     print("tick")
     print("  -> relais_state: " .. (relais_state or "?"))
     print("  -> seconds_until_switchoff_counter: " .. (seconds_until_switchoff_counter or "?"))
     print("  -> pwm_duty: " .. (pwm_duty or "?"))
     
+
     -- railais_state --
     if tonumber(relais_state) == 2 then
         seconds_until_switchoff_counter = seconds_until_switchoff_counter-1
@@ -109,16 +111,19 @@ tmr.register(timer1_id, timer1_timeout_millis, tmr.ALARM_SEMI, function()
     --print("  getPWMDuty(): " .. pwm_duty)
     -- /PWM
 
+    collectgarbage()
+    print("  -> heap: " .. node.heap())
+    
     tmr.start(timer1_id)
 end)
 tmr.start(timer1_id)
-print(" timer1 started");
+print(" timer1 started ");
 
 
 
 
-nextMaximumPWM = 1
-function getSpeed()
+local nextMaximumPWM = 1
+local function getSpeed()
     if nextMaximumPWM < 10   then return 1  end
     if nextMaximumPWM < 50   then return 2  end
     if nextMaximumPWM < 100  then return 3  end
@@ -129,8 +134,8 @@ function getSpeed()
     if nextMaximumPWM < 1000 then return 12 end
     return 10
 end
-countdirection = 1  -- 1=up 2=down
-function getNextPWM()
+local countdirection = 1  -- 1=up 2=down
+local function getNextPWM()
     -- count up or down
     speed = getSpeed()
     -- print("  speed: " .. speed or "N/A")
@@ -139,7 +144,7 @@ function getNextPWM()
     elseif countdirection==2 then
         nextMaximumPWM = nextMaximumPWM - speed
     else
-        print("EEEERRRROOOOOORRRR")
+        countdirection = 1
     end
 
     -- check overflow and change directions
@@ -152,14 +157,14 @@ function getNextPWM()
         nextMaximumPWM = pwm_duty
         countdirection = 2
     end
-    
+
     --print("  nextMaximumPWM: " .. nextMaximumPWM)
     return nextMaximumPWM
 end
 
 -- TIMER 2 (pwm pulse)
-timer2_id = 1
-function getTimer2_timeout_millis()
+local timer2_id = 1
+local function getTimer2_timeout_millis()
     if nextMaximumPWM < 10   then return 80 end
     if nextMaximumPWM < 50   then return 70 end
     if nextMaximumPWM < 100  then return 60 end
@@ -177,7 +182,7 @@ tmr.register(timer2_id, getTimer2_timeout_millis(), tmr.ALARM_SEMI, function()
     tmr.start(timer2_id)
 end)
 tmr.start(timer2_id)
-print(" timer2 started");
+print(" timer2 started (PWM duty)");
 
 ----------------
 -- Init Wifi  --
@@ -197,7 +202,8 @@ end
 collectgarbage()
 print("client_ssid: '" .. client_ssid .. "'")
 print("client_password: '" .. client_password .. "'")
-print("  again: " .. string.gsub(client_password, "%%2C", ","))
+-- a fix for URL-encoded character ',' (comma)
+print("  after URL-char-decode: " .. string.gsub(client_password, "%%2C", ","))
 
 -- setup station mode
 wifi.setmode(wifi.STATION)
@@ -219,8 +225,8 @@ if srv~=nil then
   print("done. now tyring to start...")
 end
 
-function Sendfile(sck, filename, sentCallback)
-    print("opening file "..filename.."...")
+local function Sendfile(sck, filename, sentCallback)
+    --print("opening file "..filename.."...")
     if not file.open(filename, "r") then
         sck:close()
         return
@@ -245,7 +251,9 @@ end
 ----------------
 -- Web Server --
 ----------------
-srv = net.createServer(net.TCP)
+
+-- == START ACTUAL WEB SERVER ==
+local srv = net.createServer(net.TCP)
 srv:listen(80, function(conn)
     conn:on("receive", function(sck, request_payload)
         -- == DATA == --
@@ -255,10 +263,11 @@ srv:listen(80, function(conn)
         else
             payload = request_payload
         end
-        print(payload)
-    
+        -- ATTENTION: print payload for debugging purposes only!
+        --print(payload)
+
         -- === FUNCTIONS ===
-        function respondMain()
+        local function respondMain()
             sck:send("HTTP/1.1 200 OK\r\n" ..
                 "Server: NodeMCU on ESP8266\r\n" ..
                 "Content-Type: text/html; charset=UTF-8\r\n\r\n", 
@@ -273,7 +282,7 @@ srv:listen(80, function(conn)
                 end)
         end
 
-        function respondStatus()
+        local function respondStatus()
             sck:send("HTTP/1.1 200 OK\r\n" ..
                 "Server: NodeMCU on ESP8266\r\n"..
                 "Content-Type: application/json; charset=UTF-8\r\n\r\n" ..
@@ -284,7 +293,7 @@ srv:listen(80, function(conn)
                 end)
         end
 
-        function respondOK()
+        local function respondOK()
             sck:send("HTTP/1.1 200 OK\r\n" ..
                 "Server: NodeMCU on ESP8266\r\n", 
                 function()
@@ -292,28 +301,28 @@ srv:listen(80, function(conn)
                 end)
         end
 
-        function respondError()
-            sck:send("HTTP/1.1 400 OK\r\n" ..
+        local function respondError()
+            sck:send("HTTP/1.1 400 Bad Request\r\n" ..
                 "Server: NodeMCU on ESP8266\r\n", 
                 function()
                     sck:close()
                 end)
         end
-        
-        function handleGET(path)
-            print("### handleGET() ###")
+
+        local function handleGET(path)
+            --print("### handleGET() ###")
             -- path?
             if string.match(path, "status") then
-                print(" - respondStatus()")
-                respondStatus()
+                --print(" - respondStatus()")
+                respondStatus(sck)
             else
-                print(" - respondMain()") 
-                respondMain()
+                --print(" - respondMain()") 
+                respondMain(sck)
             end
         end
 
         -- handle posted data updates
-        function handlePOSTcontent(POST_seconds_until_switchoff_counter, POST_relais_state)
+        local function handlePOSTcontent(POST_seconds_until_switchoff_counter, POST_relais_state)
             if POST_seconds_until_switchoff_counter and tonumber(POST_relais_state)==2 then
                seconds_until_switchoff_counter = POST_seconds_until_switchoff_counter
             end
@@ -325,44 +334,47 @@ srv:listen(80, function(conn)
                 if tonumber(POST_relais_state)==1 then seconds_until_switchoff_counter = 0 end
             end
         end
-        
-        function handlePOST(path)
-            print("### handlePOST() ###")
+
+        local function handlePOST(path)
+            --print("### handlePOST() ###")
             -- path?
             if string.match(path, "status") then
                 -- POST @ path "/status" --> application/json
                 local whitespace1, POST_seconds_until_switchoff_counter = string.match(payload, "\"seconds_until_switchoff_counter\":(%s*)(%d*)")
                 local whitespace2, POST_relais_state = string.match(payload, "\"relais_state\":(%s*)(%d)")
-                print("  POST_seconds_until_switchoff_counter: " .. (POST_seconds_until_switchoff_counter or "?"))
-                print("  POST_relais_state: " .. (POST_relais_state or "?"))
+                --print("  POST_seconds_until_switchoff_counter: " .. (POST_seconds_until_switchoff_counter or "?"))
+                --print("  POST_relais_state: " .. (POST_relais_state or "?"))
                 handlePOSTcontent(POST_seconds_until_switchoff_counter, POST_relais_state)
             else
                 -- POST @ path "/" --> application/x-www-form-urlencoded
                 local POST_seconds_until_switchoff_counter = string.match(payload, "seconds_until_switchoff_counter=(%d*)")
                 local POST_relais_state = string.match(payload, "relais_state=(%d)")
-                print("  POST_seconds_until_switchoff_counter: " .. (POST_seconds_until_switchoff_counter or "?"))
-                print("  POST_relais_state: " .. (POST_relais_state or "?"))
+                --print("  POST_seconds_until_switchoff_counter: " .. (POST_seconds_until_switchoff_counter or "?"))
+                --print("  POST_relais_state: " .. (POST_relais_state or "?"))
                 handlePOSTcontent(POST_seconds_until_switchoff_counter, POST_relais_state)
             end
             
             respondMain()
         end
         -- === FUNCTIONS - END ===
-        
+    
         -- === ACTUAL EVALUATION ===
         local GET_requestpath = string.match(payload, "GET (.*) HTTP") --or "N/A"
         local POST_requestpath = string.match(payload, "POST (.*) HTTP") --or "N/A"
-        print(" GET_requestpath: " .. (GET_requestpath or "???") )
-        print(" POST_requestpath: " .. (POST_requestpath or "???") )
+        --print(" GET_requestpath: " .. (GET_requestpath or "???") )
+        --print(" POST_requestpath: " .. (POST_requestpath or "???") )
         
         if GET_requestpath then
-            handleGET(GET_requestpath)
+            handleGET(payload, GET_requestpath)
         elseif POST_requestpath then
-            handlePOST(POST_requestpath)
+            handlePOST(payload, POST_requestpath)
         else
-            print("# cannot handle request. olny GET and POST are allowed.")
+            --print("# cannot handle request. olny GET and POST are allowed.")
             respondError()
         end
+
+        -- finally, collect garbage
+        collectgarbage()
         
     end)
         

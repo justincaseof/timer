@@ -46,17 +46,11 @@ end
 ----------
 -- mDNS --
 ----------
-local dnsRegistered = false
-local function check_mDNS_registration() 
-    if not dnsRegistered then
-        print(" mDNS registration waiting for connetion...")
-        -- STA_GOTIP = 5
-        if wifi.sta.status()==5 then
-            print(" got wifi connection!")
-            mdns.register("nodemcushutdowntimer", { description="ShutdownTimer", service="http", port=80, location="CZ13" })
-            dnsRegistered = true
-        end
+local function enable_mDNS_registration() 
+    mdns.register("nodemcushutdowntimer", { description="ShutdownTimer", service="http", port=80, location="CZ13" })
     end
+local function disable_mDNS_registration() 
+    mdns.close()
 end
 
 ------------------
@@ -142,7 +136,7 @@ tmr.register(timer1_id, timer1_timeout_millis, tmr.ALARM_SEMI, function()
     --print("  getPWMDuty(): " .. pwm_duty)
     -- /PWM
 
-    -- === WIFICHECK ===
+    -- === WIFI SETUP CHECK ===
     -- check for active wifi setup during cycle
     -- var 'local setup_wifi = gpio.read(setupwifi_pin)' has been previously defined by init.lua script
     if isWifiSetupActive() then
@@ -255,11 +249,24 @@ wifi.setphymode(wifi.PHYMODE_G)
 wifi.sta.config(client_ssid, client_password) 
 wifi.sta.connect()
 print(" connecting to: " .. client_ssid)
+
+-- === WIFI LISTENERS ===
 wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(T)
         print("\n\tSTA - GOT IP".."\n\tStation IP: "..T.IP.."\n\tSubnet mask: "..T.netmask.."\n\tGateway IP: "..T.gateway)
-        check_mDNS_registration()
+        enable_mDNS_registration()
     end
 )
+wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(T)
+        print("\n\tSTA - DISCONNECTED".."\n\tSSID: "..T.SSID.."\n\tBSSID: "..T.BSSID.."\n\treason: "..T.reason)
+        disable_mDNS_registration()
+    end
+)
+wifi.eventmon.register(wifi.eventmon.STA_AUTHMODE_CHANGE, Function(T)
+        print("\n\tSTA - AUTHMODE CHANGE".."\n\told_auth_mode: "..T.old_auth_mode.."\n\tnew_auth_mode: "..T.new_auth_mode)
+        disable_mDNS_registration()
+    end
+)
+-- === /WIFI LISTENERS ===
 
 ----------------
 -- Web Server --

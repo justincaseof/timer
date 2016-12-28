@@ -30,6 +30,9 @@ pwm.setup(led_pin, pwm_frequency, pwm_duty_MIN)
 pwm.start(led_pin)
 
 
+-----------------------------
+-- WIFI setup switch check --
+-----------------------------
 -- check for active wifi setup during cycle
 -- var 'local setup_wifi = gpio.read(setupwifi_pin)' has been previously defined by init.lua script
 function isWifiSetupActive()
@@ -37,7 +40,22 @@ function isWifiSetupActive()
         return gpio.read(setupwifi_pin)==0
     end
     return false
-end    
+end
+
+----------
+-- mDNS --
+----------
+local dnsRegistered = false
+local function check_mDNS_registration() 
+    if not dnsRegistered then
+        print(" mDNS registration waiting for connetion...")
+        if wifi.sta.status()==5 then
+            print(" got wifi connection!")
+            mdns.register("nodemcushutdowntimer", { description="ShutdownTimer", service="http", port=80, location="CZ13" })
+            dnsRegistered = true
+        end
+    end
+end
 
 ------------------
 -- STATES  --
@@ -122,14 +140,17 @@ tmr.register(timer1_id, timer1_timeout_millis, tmr.ALARM_SEMI, function()
     --print("  getPWMDuty(): " .. pwm_duty)
     -- /PWM
 
-    -- WIFICHECK
+    -- === WIFICHECK ===
     -- check for active wifi setup during cycle
     -- var 'local setup_wifi = gpio.read(setupwifi_pin)' has been previously defined by init.lua script
     if isWifiSetupActive() then
         printf("SETUP_WIFI_RESTART")
         node.restart()
     end
-    -- /WIFICHECK
+
+    -- mDNS
+    check_mDNS_registration()
+    -- === /WIFICHECK ===
 
 	-- GC (doesn't help from out of memory, though)
     collectgarbage()

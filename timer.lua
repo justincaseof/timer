@@ -42,6 +42,7 @@ function isWifiSetupActive()
     return false
 end
 
+
 ----------
 -- mDNS --
 ----------
@@ -49,6 +50,7 @@ local dnsRegistered = false
 local function check_mDNS_registration() 
     if not dnsRegistered then
         print(" mDNS registration waiting for connetion...")
+        -- STA_GOTIP = 5
         if wifi.sta.status()==5 then
             print(" got wifi connection!")
             mdns.register("nodemcushutdowntimer", { description="ShutdownTimer", service="http", port=80, location="CZ13" })
@@ -147,9 +149,6 @@ tmr.register(timer1_id, timer1_timeout_millis, tmr.ALARM_SEMI, function()
         printf("SETUP_WIFI_RESTART")
         node.restart()
     end
-
-    -- mDNS
-    check_mDNS_registration()
     -- === /WIFICHECK ===
 
 	-- GC (doesn't help from out of memory, though)
@@ -160,7 +159,7 @@ tmr.register(timer1_id, timer1_timeout_millis, tmr.ALARM_SEMI, function()
     tmr.start(timer1_id)
 end)
 tmr.start(timer1_id)
-print(" timer1 started ");
+print(" timer1 started (switch relais)");
 
 
 
@@ -256,6 +255,11 @@ wifi.setphymode(wifi.PHYMODE_G)
 wifi.sta.config(client_ssid, client_password) 
 wifi.sta.connect()
 print(" connecting to: " .. client_ssid)
+wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(T)
+        print("\n\tSTA - GOT IP".."\n\tStation IP: "..T.IP.."\n\tSubnet mask: "..T.netmask.."\n\tGateway IP: "..T.gateway)
+        check_mDNS_registration()
+    end
+)
 
 ----------------
 -- Web Server --

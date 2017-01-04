@@ -140,7 +140,7 @@ tmr.register(timer1_id, timer1_timeout_millis, tmr.ALARM_SEMI, function()
     -- check for active wifi setup during cycle
     -- var 'local setup_wifi = gpio.read(setupwifi_pin)' has been previously defined by init.lua script
     if isWifiSetupActive() then
-        printf("SETUP_WIFI_RESTART")
+        print("SETUP_WIFI_RESTART")
         node.restart()
     end
     -- === /WIFICHECK ===
@@ -250,6 +250,7 @@ wifi.sta.config(client_ssid, client_password)
 wifi.sta.connect()
 print(" connecting to: " .. client_ssid)
 
+--[[ 
 -- === WIFI LISTENERS ===
 wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(T)
         print("\n\tSTA - GOT IP".."\n\tStation IP: "..T.IP.."\n\tSubnet mask: "..T.netmask.."\n\tGateway IP: "..T.gateway)
@@ -261,12 +262,13 @@ wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(T)
         disable_mDNS_registration()
     end
 )
-wifi.eventmon.register(wifi.eventmon.STA_AUTHMODE_CHANGE, Function(T)
+wifi.eventmon.register(wifi.eventmon.STA_AUTHMODE_CHANGE, function(T)
         print("\n\tSTA - AUTHMODE CHANGE".."\n\told_auth_mode: "..T.old_auth_mode.."\n\tnew_auth_mode: "..T.new_auth_mode)
         disable_mDNS_registration()
     end
 )
 -- === /WIFI LISTENERS ===
+]] --
 
 ----------------
 -- Web Server --
